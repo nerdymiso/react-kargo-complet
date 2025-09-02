@@ -1,23 +1,17 @@
 function Services({ items }) {
   return (
-    <section style={{ textAlign: "center", padding: "20px" }}>
-      <h2>Nos Services</h2>
-      <ul style={{ listStyle: "none", padding: 0 }}>
+    <section className="py-12 bg-white">
+      <h2 className="text-3xl font-bold text-center mb-8 text-gray-800">Nos Services</h2>
+      <div className="flex flex-wrap justify-center gap-6">
         {items.map((service, index) => (
-          <li
+          <div
             key={index}
-            style={{
-              background: "#f5f5f5",
-              margin: "10px auto",
-              padding: "10px",
-              borderRadius: "8px",
-              width: "200px",
-            }}
+            className="bg-blue-50 shadow-lg rounded-xl p-6 w-60 text-center transform transition duration-300 hover:scale-105"
           >
-            {service}
-          </li>
+            <p className="text-lg font-semibold text-gray-700">{service}</p>
+          </div>
         ))}
-      </ul>
+      </div>
     </section>
   );
 }
