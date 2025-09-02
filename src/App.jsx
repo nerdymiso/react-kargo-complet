@@ -1,4 +1,4 @@
-/**import Header from "./components/Header";
+import Header from "./components/Header";
 import Services from "./components/Services";
 
 function App() {
@@ -11,14 +11,4 @@ function App() {
     </div>
   );
 }
-
-export default App;**/
-function App() {
-  return (
-    <div className="text-center text-orange-500 text-4xl mt-10">
-      Tailwind is working!
-    </div>
-  );
-}
-
 export default App;
