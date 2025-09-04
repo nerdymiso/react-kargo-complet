@@ -1,21 +1,25 @@
-import Header from "./components/Header";
+import { Routes, Route } from "react-router-dom";
+import Navbar from "./components/Navbar";
+import Hero from "./components/Hero";
 import Services from "./components/Services";
+import Contact from "./components/Contact";
 
 function App() {
-  const servicesList = ["Transport", "Livraison", "Suivi en temps réel"];
-
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-100 to-white">
-      <Header
-        title="Kargo Website"
-        slogan="Ta marchandise, notre mission"
-      />
+    <div className="min-h-screen bg-gray-50 text-gray-900">
+      <Navbar />
+      <Hero />
 
-      <Services items={servicesList} />
-
-      <footer className="mt-16 py-6 text-center text-gray-500 text-sm bg-gray-200">
-        &copy; {new Date().getFullYear()} Kargo. Tous droits réservés.
-      </footer>
+      <div className="pt-72 max-w-7xl mx-auto px-4">
+        <Routes>
+          <Route path="/" element={<h1 className="text-center text-3xl font-bold">Page d’accueil</h1>} />
+          <Route
+            path="/services"
+            element={<Services items={["Transport", "Livraison", "Suivi en temps réel"]} />}
+          />
+          <Route path="/contact" element={<Contact />} />
+        </Routes>
+      </div>
     </div>
   );
 }

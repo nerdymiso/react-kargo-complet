@@ -1,21 +1,28 @@
-import { FaTruck, FaBoxOpen, FaClock } from "react-icons/fa";
+import { Truck, Inbox, Clock } from "lucide-react";
 
-const serviceIcons = [FaTruck, FaBoxOpen, FaClock];
+const defaultIcons = [Truck, Inbox, Clock];
 
-function Services({ items }) {
+function Services({ items = [] }) {
+  // Normalise: "Transport" -> { name: "Transport" }
+  const normalized = items.map((it, idx) =>
+    typeof it === "string" ? { name: it, icon: defaultIcons[idx] } : it
+  );
+
   return (
-    <section className="py-16 bg-gray-50">
-      <h2 className="text-3xl font-bold text-center mb-12 text-gray-800">Nos Services</h2>
-      <div className="flex flex-wrap justify-center gap-8">
-        {items.map((service, index) => {
-          const Icon = serviceIcons[index];
+    <section className="py-12 text-center">
+      <h2 className="text-3xl font-semibold mb-8">Nos Services</h2>
+      <div className="flex flex-wrap justify-center gap-6">
+        {normalized.map((service, index) => {
+          const Icon = service.icon || defaultIcons[index % defaultIcons.length];
           return (
             <div
               key={index}
-              className="bg-white shadow-lg rounded-xl p-8 w-64 text-center transform transition duration-500 hover:scale-105 hover:shadow-2xl hover:bg-gradient-to-r hover:from-blue-400 hover:to-indigo-500 hover:text-white"
+              className="bg-kargo-white shadow-lg rounded-lg p-6 w-60 hover:scale-105 transition-transform duration-300"
             >
-              <Icon className="text-4xl mb-4 mx-auto" />
-              <p className="text-lg font-semibold">{service}</p>
+              {Icon && <Icon className="h-8 w-8 text-kargo-orange mx-auto mb-3" />}
+              <p className="text-kargo-blue font-medium text-lg">
+                {service.name}
+              </p>
             </div>
           );
         })}
