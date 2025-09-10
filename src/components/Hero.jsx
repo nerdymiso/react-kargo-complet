@@ -15,7 +15,6 @@ function Hero() {
         <Truck size={20} />
         Démarrer Maintenant
         <ArrowRight size={18} />
-
       </button>
 
     </section>

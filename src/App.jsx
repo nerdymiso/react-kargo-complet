@@ -2,10 +2,17 @@ import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Contact from "./components/contact";
 
+
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
+import DriverDashboard from "./pages/DriverDashboard";
+import ClientDashboard from "./pages/ClientDashboard";
+import NewOrder from "./pages/NewOrder";
+import OrdersTracking from "./pages/OrdersTracking";
+import Profile from "./pages/Profile";
+import Settings from "./pages/Settings";
 
 function App() {
   return (
@@ -19,6 +26,12 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="*" element={<NotFound />} />
+        <Route path="/ClientDashboard" element={<ClientDashboard />} />
+        <Route path="/DriverDashboard" element={<DriverDashboard />} />
+        <Route path="/NewOrder" element={<NewOrder />} />
+        <Route path="/OrdersTracking" element={<OrdersTracking />} />
+        <Route path="/Profile" element={<Profile />} />
+        <Route path="/Settings" element={<Settings />} />
       </Routes>
 
        <Contact />

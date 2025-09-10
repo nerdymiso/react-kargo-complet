@@ -1,5 +1,8 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+
+
 
 function Signup() {
   const [form, setForm] = useState({
@@ -14,11 +17,18 @@ function Signup() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Inscription avec:", form);
-  };
+  const navigate = useNavigate();
 
+const handleSubmit = (e) => {
+  e.preventDefault();
+  console.log("Inscription avec:", form);
+  if (form.role === "client") {
+    navigate("/ClientDashboard");
+  } else {
+    navigate("/DriverDashboard");
+  }
+};
+  
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100 px-4">
       <div className="bg-white shadow-lg rounded-2xl p-8 w-full max-w-md">
