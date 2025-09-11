@@ -19,3 +19,39 @@ function Sidebar() {
 }
 
 export default Sidebar;
+//**import { Link } from "react-router-dom";
+//function Sidebar({role}) => {
+  //return (
+    // Exemple : Sidebar.jsx
+//import React from "react";
+//import { Link } from "react-router-dom";
+
+/**const Sidebar = ({ role }) => {
+  return (
+    <div className="h-screen w-64 bg-gray-900 text-white p-4">
+      <h2 className="text-xl font-bold mb-6">Dashboard</h2>
+      
+      {role === "shipper" ? (
+        // Dashboard expéditeur
+        <ul>
+          <li><Link to="/NewOrder">Nouvelle commande</Link></li>
+          <li><Link to="/ClientDashboard">Tableau de bord</Link></li>
+          <li><Link to="/OrdersTracking">Suivi des commandes</Link></li>
+          <li><Link to="/Settings">Paramètres</Link></li>
+          <li><Link to="/Profile">Profil</Link></li>
+        </ul>
+      ) : (
+        // Dashboard transporteur
+        <ul>
+          <li><Link to="/DriverDashboard">Tableau de bord</Link></li>
+          <li><Link to="/DriverHistory">Historique des livraisons</Link></li>
+          <li><Link to="/Profile">Profil</Link></li>
+          <li><Link to="/Settings">Paramètres</Link>
+        </ul>
+      )}
+    </div>
+  );
+};
+
+export default Sidebar;*/
+
