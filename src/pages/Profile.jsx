@@ -1,5 +1,8 @@
 // src/pages/Profile.jsx
 import { useState } from "react";
+import DashboardLayout from "../components/DashboardLayout";
+import { User as UserIcon } from "lucide-react";
+
 
 function Profile() {
   const [user, setUser] = useState({
@@ -19,33 +22,35 @@ function Profile() {
   };
 
   return (
-    <div className="p-6 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Mon Profil</h1>
-      <form onSubmit={handleSave} className="space-y-4 bg-white p-6 shadow-lg rounded-xl">
-        <input
-          type="text"
-          name="firstName"
-          value={user.firstName}
-          onChange={handleChange}
-          className="w-full px-4 py-2 border rounded-lg"
-          placeholder="Prénom"
-        />
-        <input
-          type="text"
-          name="lastName"
-          value={user.lastName}
-          onChange={handleChange}
-          className="w-full px-4 py-2 border rounded-lg"
-          placeholder="Nom"
-        />
-        <input
-          type="email"
-          name="email"
-          value={user.email}
-          onChange={handleChange}
-          className="w-full px-4 py-2 border rounded-lg"
-          placeholder="Email"
-        />
+    <DashboardLayout>
+     <div className="p-6 max-w-2xl mx-auto">
+        <h1 className="text-2xl font-bold mb-6 flex items-center gap-2">
+         <UserIcon className="w-6 h-6 text-orange-500" /> Mon Profil</h1>
+         <form onSubmit={handleSave} className="space-y-4 bg-white p-6 shadow-lg rounded-xl">
+           <input
+             type="text"
+             name="firstName"
+             value={user.firstName}
+             onChange={handleChange}
+             className="w-full px-4 py-2 border rounded-lg"
+             placeholder="Prénom"
+           /> 
+          <input
+           type="text"
+           name="lastName"
+           value={user.lastName}
+            onChange={handleChange}
+            className="w-full px-4 py-2 border rounded-lg"
+            placeholder="Nom"
+          />
+          <input
+            type="email"
+            name="email"
+           value={user.email}
+           onChange={handleChange}
+            className="w-full px-4 py-2 border rounded-lg"
+           placeholder="Email"
+          />
         <input
           type="tel"
           name="phone"
@@ -62,6 +67,7 @@ function Profile() {
         </button>
       </form>
     </div>
+    </DashboardLayout>
   );
 }
 

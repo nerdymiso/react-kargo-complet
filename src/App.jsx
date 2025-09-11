@@ -13,6 +13,8 @@ import NewOrder from "./pages/NewOrder";
 import OrdersTracking from "./pages/OrdersTracking";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
+import DriverHistory from "./pages/DriverHistory";
+
 
 function App() {
   return (
@@ -32,6 +34,7 @@ function App() {
         <Route path="/OrdersTracking" element={<OrdersTracking />} />
         <Route path="/Profile" element={<Profile />} />
         <Route path="/Settings" element={<Settings />} />
+        <Route path="/DriverHistory" element={<DriverHistory />} />
       </Routes>
 
        <Contact />

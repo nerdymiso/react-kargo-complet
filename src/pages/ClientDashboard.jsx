@@ -1,4 +1,3 @@
-// pages/dashboard/ClientDashboard.jsx
 import DashboardLayout from "../components/DashboardLayout";
 //import NavbarDashboard from "../components/NavbarDashboard";
 import { Package, Truck, PlusCircle } from "lucide-react";
@@ -44,7 +43,7 @@ function ClientDashboard() {
       {/* Bouton nouvelle commande */}
       <div className="flex justify-end mb-6">
         <Link
-          to="/dashboard/new-order"
+          to="/NewOrder"
           className="flex items-center gap-2 bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition"
         >
           <PlusCircle size={20} />

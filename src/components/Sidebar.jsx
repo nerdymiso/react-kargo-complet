@@ -12,6 +12,7 @@ function Sidebar() {
         <Link to="/OrdersTracking" className="hover:text-orange-400">Suivi colis</Link>
         <Link to="/Profile" className="hover:text-orange-400">Profil</Link>
         <Link to="/Settings" className="hover:text-orange-400">Paramètres</Link>
+        <Link to="/DriverHistory" className="hover:text-orange-400">Historique</Link>
       </nav>
     </aside>
   );
