@@ -28,23 +28,29 @@ function Signup() {
       const { data, error } = await supabase.auth.signUp({
         email: form.email,
         password: form.password,
+        options: {
+          data: { full_name: `${form.firstName} ${form.lastName}` },
+        },
       });
 
       if (error) throw error;
-      const user = data.user;
 
-      // 2️⃣ Ajouter user dans la table "users"
+      const user = data?.user;
+      if (!user) throw new Error("Impossible de créer le compte utilisateur.");
+
+      // 2️⃣ Ajouter user dans la table "users" avec rôle = pending
       const { error: insertError } = await supabase.from("users").insert([
         {
           id: user.id,
           full_name: `${form.firstName} ${form.lastName}`,
           email: form.email,
+          role: "pending", // sera défini dans OnboardingRole
         },
       ]);
 
       if (insertError) throw insertError;
 
-      // 3️⃣ Redirection vers l’onboarding (choix du rôle)
+      // 3️⃣ Rediriger vers /onboarding/role
       navigate("/onboarding/role");
     } catch (err) {
       console.error(err);
