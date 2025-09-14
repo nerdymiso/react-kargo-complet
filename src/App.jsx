@@ -15,7 +15,7 @@ import Settings from "./pages/Settings";
 import DriverHistory from "./pages/DriverHistory";
 
 // Onboarding
-import Role from "./pages/onboarding/Role";
+import OnboardingRole from "./pages/onboarding/OnboardingRole";
 import OnboardingProfil from "./pages/onboarding/OnboardingProfil";
 import OnboardingFinish from "./pages/onboarding/OnboardingFinish";
 import OnboardingTransporteur from "./pages/onboarding/OnboardingTransporteur";
@@ -48,7 +48,7 @@ function App() {
         <Route path="/driver-history" element={<DriverHistory />} />
 
         {/* Onboarding */}
-        <Route path="/onboarding/role" element={<Role />} />
+        <Route path="/onboarding/role" element={<OnboardingRole />} />
         <Route path="/onboarding/profil" element={<OnboardingProfil />} />
         <Route path="/onboarding/finish" element={<OnboardingFinish />} />
         <Route path="/onboarding/transporteur" element={<OnboardingTransporteur />} />
