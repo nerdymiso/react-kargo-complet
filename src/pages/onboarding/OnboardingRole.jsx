@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../services/supabase";
 
-function OnboardingRole() {
+function Role() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
@@ -80,4 +80,4 @@ function OnboardingRole() {
   );
 }
 
-export default OnboardingRole;
+export default Role;

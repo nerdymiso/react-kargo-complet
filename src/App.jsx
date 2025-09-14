@@ -15,7 +15,7 @@ import Settings from "./pages/Settings";
 import DriverHistory from "./pages/DriverHistory";
 
 // Onboarding
-//import Role from "./pages/onboarding/Role";
+import Role from "./pages/onboarding/Role";
 import OnboardingProfil from "./pages/onboarding/OnboardingProfil";
 import OnboardingFinish from "./pages/onboarding/OnboardingFinish";
 import OnboardingTransporteur from "./pages/onboarding/OnboardingTransporteur";
