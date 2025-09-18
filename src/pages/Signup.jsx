@@ -6,11 +6,15 @@ import { supabase } from "../services/supabase";
 function Signup() {
   const navigate = useNavigate();
   const [form, setForm] = useState({
-    firstName: "",
-    lastName: "",
+    prenom: "",
+    nom: "",
     email: "",
     password: "",
+    address: "",
+    phone: "",
+    role: "",
   });
+
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -24,12 +28,15 @@ function Signup() {
     setErrorMsg("");
 
     try {
-      // 1️⃣ Créer user dans Auth
+      // 1️⃣ Créer l'utilisateur dans Auth
       const { data, error } = await supabase.auth.signUp({
         email: form.email,
         password: form.password,
         options: {
-          data: { full_name: `${form.firstName} ${form.lastName}` },
+          data: {
+            full_name: `${form.prenom} ${form.nom}`,
+            role: form.role,
+          },
         },
       });
 
@@ -38,20 +45,29 @@ function Signup() {
       const user = data?.user;
       if (!user) throw new Error("Impossible de créer le compte utilisateur.");
 
-      // 2️⃣ Ajouter user dans la table "users" avec rôle = pending
-      const { error: insertError } = await supabase.from("users").insert([
+      // 2️⃣ Ajouter user dans la table "users"
+      const { error: upsertError } = await supabase.from("users").upsert([
         {
-          id: user.id,
-          full_name: `${form.firstName} ${form.lastName}`,
+          id: user.id, // toujours le même que dans auth.users
           email: form.email,
-          role: "pending", // sera défini dans OnboardingRole
+          phone: form.phone,
+          nom: form.nom,
+          prenom: form.prenom,
+          role: form.role,
+          address: form.address,
         },
       ]);
 
-      if (insertError) throw insertError;
+      if (upsertError) throw upsertError;
 
-      // 3️⃣ Rediriger vers /onboarding/role
-      navigate("/onboarding/role");
+      // 3️⃣ Redirection selon le rôle choisi
+      if (form.role === "expediteur") {
+        navigate("/OnboardingExpediteur");
+      } else if (form.role === "transporteur") {
+        navigate("/OnboardingTransporteur");
+      } else {
+        navigate("/OnboardingClient");
+      }
     } catch (err) {
       console.error(err);
       setErrorMsg(err.message);
@@ -72,18 +88,36 @@ function Signup() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="text"
-            name="firstName"
+            name="prenom"
             placeholder="Prénom"
-            value={form.firstName}
+            value={form.prenom}
             onChange={handleChange}
             className="w-full px-4 py-2 border rounded-lg"
             required
           />
           <input
             type="text"
-            name="lastName"
+            name="nom"
             placeholder="Nom"
-            value={form.lastName}
+            value={form.nom}
+            onChange={handleChange}
+            className="w-full px-4 py-2 border rounded-lg"
+            required
+          />
+          <input
+            type="text"
+            name="address"
+            placeholder="Adresse"
+            value={form.address}
+            onChange={handleChange}
+            className="w-full px-4 py-2 border rounded-lg"
+            required
+          />
+          <input
+            type="text"
+            name="phone"
+            placeholder="Numéro de téléphone"
+            value={form.phone}
             onChange={handleChange}
             className="w-full px-4 py-2 border rounded-lg"
             required
@@ -106,6 +140,20 @@ function Signup() {
             className="w-full px-4 py-2 border rounded-lg"
             required
           />
+
+          {/* Champ rôle → mieux avec un select */}
+          <select
+            name="role"
+            value={form.role}
+            onChange={handleChange}
+            className="w-full px-4 py-2 border rounded-lg"
+            required
+          >
+            <option value="">-- Choisis ton rôle --</option>
+            <option value="expediteur">Expéditeur</option>
+            <option value="transporteur">Transporteur</option>
+            <option value="client">Client</option>
+          </select>
 
           <button
             type="submit"

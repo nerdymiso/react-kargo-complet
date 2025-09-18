@@ -1,79 +1,161 @@
+// src/pages/Signup.jsx
 import { useState } from "react";
-import DashboardLayout from "../components/DashboardLayout";
-import { Truck, CheckCircle } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { supabase } from "../services/supabase";
 
-function DriverDashboard() {
-  const [deliveries, setDeliveries] = useState([
-    {
-      id: 1,
-      client: "Entreprise A",
-      marchandises: "Électroniques",
-      statut: "En cours",
-      adresse: "Alger → Oran",
-    },
-    {
-      id: 2,
-      client: "Entreprise B",
-      marchandises: "Textiles",
-      statut: "En cours",
-      adresse: "Alger → Tizi Ouzou",
-    },
-  ]);
+function Signup() {
+  const navigate = useNavigate();
+  const [form, setForm] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    address: "",
+    password: "",
+  });
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
 
-  const markAsDelivered = (id) => {
-    setDeliveries((prev) =>
-      prev.map((d) =>
-        d.id === id ? { ...d, statut: "Livrée" } : d
-      )
-    );
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setErrorMsg("");
+
+    try {
+      // 1️⃣ Créer user dans Auth
+      const { data, error } = await supabase.auth.signUp({
+        email: form.email,
+        password: form.password,
+        options: {
+          data: {
+            full_name: `${form.firstName} ${form.lastName}`,
+            phone: form.phone,
+            address: form.address,
+          },
+        },
+      });
+
+      if (error) throw error;
+
+      const user = data?.user;
+      if (!user) throw new Error("Impossible de créer le compte utilisateur.");
+
+      // 2️⃣ Ajouter user dans la table "users" avec rôle = pending
+      const { error: insertError } = await supabase.from("users").insert([
+        {
+          id: user.id,
+          email: form.email,
+          phone: form.phone,
+          nom: form.lastName, // ⚠️ ta table a "nom"
+          prenom: form.firstName, // ⚠️ ta table a "prenom"
+          role: "pending",
+          address: form.address, // ⚠️ ta table a "address"
+          password: form.password, // ⚠️ pas recommandé de stocker mot de passe en clair
+        },
+      ]);
+
+      if (insertError) throw insertError;
+
+      // 3️⃣ Rediriger vers /onboarding/role
+      navigate("/onboarding/role");
+    } catch (err) {
+      console.error(err);
+      setErrorMsg(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <DashboardLayout>
-      <h1 className="text-2xl font-bold mb-6 flex items-center gap-2">
-        <Truck className="w-6 h-6 text-orange-500" /> Missions en cours
-      </h1>
+    <div className="flex items-center justify-center min-h-screen bg-gray-100 px-4">
+      <div className="bg-white shadow-lg rounded-2xl p-8 w-full max-w-md">
+        <h1 className="text-2xl font-bold text-center mb-6">Créer un compte</h1>
 
-      <div className="grid gap-4">
-        {deliveries.length === 0 ? (
-          <p className="text-gray-500">Aucune mission en cours 🚚</p>
-        ) : (
-          deliveries.map((d) => (
-            <div
-              key={d.id}
-              className="p-4 bg-white shadow rounded-lg flex justify-between items-center"
-            >
-              <div>
-                <p className="font-semibold">{d.client}</p>
-                <p className="text-gray-600">{d.marchandises}</p>
-                <p className="text-sm text-gray-500">{d.adresse}</p>
-                <p className="text-sm text-yellow-600 font-medium">
-                  {d.statut}
-                </p>
-              </div>
-
-              <button
-                onClick={() => markAsDelivered(d.id)}
-                className="flex items-center gap-2 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition"
-              >
-                <CheckCircle className="w-4 h-4" /> Marquer livrée
-              </button>
-            </div>
-          ))
+        {errorMsg && (
+          <p className="text-red-500 text-center mb-4">{errorMsg}</p>
         )}
-      </div>
 
-      <div className="mt-6 text-center">
-        <Link
-          to="/DriverHistory"
-          className="text-orange-500 hover:underline font-semibold"
-        >
-          Voir missions passées →
-        </Link>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <input
+            type="text"
+            name="firstName"
+            placeholder="Prénom"
+            value={form.firstName}
+            onChange={handleChange}
+            className="w-full px-4 py-2 border rounded-lg"
+            required
+          />
+          <input
+            type="text"
+            name="lastName"
+            placeholder="Nom"
+            value={form.lastName}
+            onChange={handleChange}
+            className="w-full px-4 py-2 border rounded-lg"
+            required
+          />
+          <input
+            type="text"
+            name="address"
+            placeholder="Adresse"
+            value={form.address}
+            onChange={handleChange}
+            className="w-full px-4 py-2 border rounded-lg"
+            required
+          />
+          <input
+            type="text"
+            name="phone"
+            placeholder="Numéro de téléphone"
+            value={form.phone}
+            onChange={handleChange}
+            className="w-full px-4 py-2 border rounded-lg"
+            required
+          />
+          <input
+            type="email"
+            name="email"
+            placeholder="Email"
+            value={form.email}
+            onChange={handleChange}
+            className="w-full px-4 py-2 border rounded-lg"
+            required
+          />
+          <input
+            type="password"
+            name="password"
+            placeholder="Mot de passe"
+            value={form.password}
+            onChange={handleChange}
+            className="w-full px-4 py-2 border rounded-lg"
+            required
+          />
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-orange-500 text-white py-2 rounded-lg font-semibold hover:bg-orange-600 transition"
+          >
+            {loading ? "Création..." : "S’inscrire"}
+          </button>
+        </form>
+
+        <p className="text-center mt-4 text-gray-600">
+          Déjà inscrit ?{" "}
+          <Link
+            to="/login"
+            className="text-orange-500 font-semibold hover:underline"
+          >
+            Se connecter
+          </Link>
+        </p>
       </div>
-    </DashboardLayout>
+    </div>
   );
 }
 
-export default DriverDashboard;
+export default Signup;
