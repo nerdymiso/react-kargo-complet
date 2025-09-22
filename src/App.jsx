@@ -16,7 +16,6 @@ import DriverHistory from "./pages/DriverHistory";
 
 // Onboarding
 import OnboardingTransporteur from "./pages/onboarding/OnboardingTransporteur";
-import OnboardingExpediteur from "./pages/onboarding/OnboardingExpediteur";
 import OnboardingClient from "./pages/onboarding/OnboardingClient";
 
 function App() {
@@ -47,7 +46,6 @@ function App() {
 
         {/* Onboarding */}
         <Route path="/OnboardingTransporteur" element={<OnboardingTransporteur />} />
-        <Route path="/OnboardingExpediteur" element={<OnboardingExpediteur />} />
         <Route path="/OnboardingClient" element={<OnboardingClient />} />
       </Routes>
 

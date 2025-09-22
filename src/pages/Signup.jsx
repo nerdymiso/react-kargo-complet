@@ -74,6 +74,9 @@ function Signup() {
     } finally {
       setLoading(false);
     }
+    const { data: sessionData } = await supabase.auth.getSession();
+      console.log("✅ Session après signup:", sessionData);
+
   };
 
   return (
@@ -152,7 +155,7 @@ function Signup() {
             <option value="">-- Choisis ton rôle --</option>
             <option value="expediteur">Expéditeur</option>
             <option value="transporteur">Transporteur</option>
-            <option value="client">Client</option>
+            <option value="entreprise">Entreprise</option>
           </select>
 
           <button
