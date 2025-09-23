@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { supabase } from "../../services/supabase";
 import { useNavigate } from "react-router-dom";
 
-const BUCKET = "transporteur_docs"; // <- mets exactement le nom du bucket ici
+const BUCKET = "transporteur_docs"; // nom exact du bucket
 
 export default function OnboardingTransporteur() {
   const [form, setForm] = useState({
@@ -14,13 +14,13 @@ export default function OnboardingTransporteur() {
     permis: null,
     assurance: null,
     carte_grise: null,
+    casier: null, // ✅ nouveau champ
   });
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
-    // debug : check session when page loads
     (async () => {
       const { data: sessionData } = await supabase.auth.getSession();
       console.log("DEBUG session (on mount) :", sessionData);
@@ -50,7 +50,6 @@ export default function OnboardingTransporteur() {
     const filePath = `${userId}/${kind}_${Date.now()}_${file.name.replace(/\s+/g, "_")}`;
     console.log("Uploading to", BUCKET, "->", filePath);
 
-    // upload
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from(BUCKET)
       .upload(filePath, file, { upsert: true });
@@ -59,15 +58,8 @@ export default function OnboardingTransporteur() {
       console.error("Upload error raw:", uploadError);
       throw uploadError;
     }
-    console.log("Upload data:", uploadData);
 
-    // get public url (works even for private buckets but access may be blocked by policies)
-    const { data: urlData, error: urlErr } = supabase.storage.from(BUCKET).getPublicUrl(filePath);
-    if (urlErr) {
-      console.warn("getPublicUrl err:", urlErr);
-      // if you use private bucket and want temporary link, you can createSignedUrl here
-    }
-    console.log("Public URL data:", urlData);
+    const { data: urlData } = supabase.storage.from(BUCKET).getPublicUrl(filePath);
     return urlData?.publicUrl || null;
   };
 
@@ -77,40 +69,24 @@ export default function OnboardingTransporteur() {
     setErrorMsg("");
 
     try {
-      // check active session
       const { data: sessionData } = await supabase.auth.getSession();
-      console.log("DEBUG session (submit):", sessionData);
       if (!sessionData?.session) {
-        throw new Error("Aucun utilisateur connecté. Connecte-toi d'abord (session manquante).");
+        throw new Error("Aucun utilisateur connecté. Connecte-toi d'abord.");
       }
 
       const { data: userData, error: userError } = await supabase.auth.getUser();
       if (userError || !userData?.user) {
-        console.error("getUser error:", userError);
-        throw new Error("Utilisateur introuvable (getUser returned null).");
+        throw new Error("Utilisateur introuvable.");
       }
       const userId = userData.user.id;
-      console.log("Uploading files for user:", userId);
 
-      // upload each file (if présent) and get public URL
-      let permisUrl = null,
-        assuranceUrl = null,
-        carteGriseUrl = null;
+      // ✅ Upload de tous les fichiers
+      const permisUrl = form.permis ? await uploadAndGetPublicUrl(userId, form.permis, "permis") : null;
+      const assuranceUrl = form.assurance ? await uploadAndGetPublicUrl(userId, form.assurance, "assurance") : null;
+      const carteGriseUrl = form.carte_grise ? await uploadAndGetPublicUrl(userId, form.carte_grise, "carte_grise") : null;
+      const casierUrl = form.casier ? await uploadAndGetPublicUrl(userId, form.casier, "casier") : null;
 
-      if (form.permis) {
-        permisUrl = await uploadAndGetPublicUrl(userId, form.permis, "permis");
-        console.log("permisUrl =>", permisUrl);
-      }
-      if (form.assurance) {
-        assuranceUrl = await uploadAndGetPublicUrl(userId, form.assurance, "assurance");
-        console.log("assuranceUrl =>", assuranceUrl);
-      }
-      if (form.carte_grise) {
-        carteGriseUrl = await uploadAndGetPublicUrl(userId, form.carte_grise, "carte_grise");
-        console.log("carteGriseUrl =>", carteGriseUrl);
-      }
-
-      // insert transporteur record with URLs (id must match existing users.id)
+      // ✅ Insertion en DB
       const { error: insertError } = await supabase.from("transporteurs").insert([
         {
           id: userId,
@@ -124,24 +100,16 @@ export default function OnboardingTransporteur() {
           permis_url: permisUrl,
           assurance_url: assuranceUrl,
           carte_grise_url: carteGriseUrl,
+          casier_url: casierUrl, // ✅ nouveau champ
         },
       ]);
 
-      if (insertError) {
-        console.error("Insert transporteurs error:", insertError);
-        throw insertError;
-      }
+      if (insertError) throw insertError;
 
-      // success
-      navigate("/DriverDashboard"); 
+      navigate("/DriverDashboard");
     } catch (err) {
       console.error("❌ Erreur OnboardingTransporteur:", err);
       setErrorMsg(err.message || "Erreur inattendue");
-
-      // debug info: si StorageApiError bucket not found -> affiche nom bucket
-      if (err?.message?.toLowerCase?.().includes("bucket not found")) {
-        console.warn("Vérifie le bucket name dans le code et dans Supabase Storage:", BUCKET);
-      }
     } finally {
       setLoading(false);
     }
@@ -173,10 +141,15 @@ export default function OnboardingTransporteur() {
 
           <label className="block font-medium">📄 Permis (PDF, max 1 Mo)</label>
           <input type="file" name="permis" accept="application/pdf" onChange={handleChange} />
+
           <label className="block font-medium">📄 Assurance (PDF, max 1 Mo)</label>
           <input type="file" name="assurance" accept="application/pdf" onChange={handleChange} />
+
           <label className="block font-medium">📄 Carte grise (PDF, max 1 Mo)</label>
           <input type="file" name="carte_grise" accept="application/pdf" onChange={handleChange} />
+
+          <label className="block font-medium">📄 Casier judiciaire (PDF, max 1 Mo)</label>
+          <input type="file" name="casier" accept="application/pdf" onChange={handleChange} />
 
           <button type="submit" disabled={loading} className="w-full bg-green-500 text-white py-2 rounded-lg font-semibold hover:bg-green-600 transition">
             {loading ? "Enregistrement..." : "Continuer"}

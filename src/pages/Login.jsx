@@ -5,7 +5,7 @@ import { supabase } from "../services/supabase";
 
 function Login() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState(""); // peut être email ou pseudo
   const [password, setPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const [loading, setLoading] = useState(false);
@@ -16,8 +16,26 @@ function Login() {
     setErrorMsg("");
 
     try {
+      let emailToUse = identifier;
+
+      // 🔎 Si l’utilisateur tape un pseudo, on récupère l’email correspondant
+      if (!identifier.includes("@")) {
+        const { data: userRow, error: pseudoError } = await supabase
+          .from("users")
+          .select("email")
+          .eq("pseudo", identifier)
+          .single();
+
+        if (pseudoError || !userRow) {
+          throw new Error("Pseudo introuvable");
+        }
+
+        emailToUse = userRow.email;
+      }
+
+      // ✅ Connexion avec email + mot de passe
       const { data, error } = await supabase.auth.signInWithPassword({
-        email,
+        email: emailToUse,
         password,
       });
 
@@ -25,7 +43,7 @@ function Login() {
 
       console.log("✅ Utilisateur connecté:", data.user);
 
-      // récupère le rôle depuis la table users
+      // 🔎 Récupérer rôle depuis la table users
       const { data: profile, error: profileError } = await supabase
         .from("users")
         .select("role")
@@ -34,9 +52,9 @@ function Login() {
 
       if (profileError) throw profileError;
 
-      // Redirection selon rôle
+      // 🚀 Redirection selon rôle
       if (profile.role === "expediteur") {
-        navigate("ClientDashboard");
+        navigate("/ClientDashboard");
       } else if (profile.role === "transporteur") {
         navigate("/DriverDashboard");
       } else {
@@ -59,10 +77,10 @@ function Login() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            type="text"
+            placeholder="Email ou Pseudo"
+            value={identifier}
+            onChange={(e) => setIdentifier(e.target.value)}
             className="w-full px-4 py-2 border rounded-lg"
             required
           />
