@@ -11,31 +11,30 @@ function Profile() {
   const [editing, setEditing] = useState(false);
   const [password, setPassword] = useState("");
 
-  // Charger les infos du user connecté
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const {
-          data: { user },
+          data: { user: authUser },
           error: authError,
         } = await supabase.auth.getUser();
         if (authError) throw authError;
 
-        if (user) {
+        if (authUser) {
           const { data: profile, error: profileError } = await supabase
             .from("users")
-            .select("prenom, nom, email, phone, pseudo")
-            .eq("id", user.id)
+            .select("prenom, nom, phone, pseudo")
+            .eq("id", authUser.id)
             .single();
 
           if (profileError) throw profileError;
 
           setUser({
-            prenom: profile.prenom || "",
-            nom: profile.nom || "",
-            email: profile.email || user.email,
-            phone: profile.phone || "",
-            pseudo: profile.pseudo || "",
+            prenom: profile?.prenom || "",
+            nom: profile?.nom || "",
+            email: authUser.email, // toujours depuis Auth
+            phone: profile?.phone || "",
+            pseudo: profile?.pseudo || "",
           });
         }
       } catch (err) {
@@ -48,7 +47,7 @@ function Profile() {
     fetchUser();
   }, []);
 
-  // Débloquer édition après vérification du mot de passe
+  // Vérification du mot de passe avant édition
   const handleUnlock = async () => {
     try {
       const {
@@ -60,7 +59,6 @@ function Profile() {
         return;
       }
 
-      // Vérification du mot de passe
       const { error } = await supabase.auth.signInWithPassword({
         email: authUser.email,
         password,
@@ -78,7 +76,6 @@ function Profile() {
     }
   };
 
-  // Gestion des inputs
   const handleChange = (e) => {
     setUser({ ...user, [e.target.name]: e.target.value });
   };
@@ -98,19 +95,17 @@ function Profile() {
           prenom: user.prenom,
           nom: user.nom,
           phone: user.phone,
-          email: user.email,
           pseudo: user.pseudo,
         })
         .eq("id", authUser.id);
 
       if (error) throw error;
 
-      console.log("✅ Profil mis à jour:", user);
-      alert("Profil mis à jour avec succès !");
+      alert("✅ Profil mis à jour !");
       setEditing(false);
     } catch (err) {
       console.error("❌ Erreur mise à jour:", err.message);
-      alert("Erreur lors de la mise à jour du profil.");
+      alert("Erreur lors de la mise à jour.");
     } finally {
       setSaving(false);
     }
@@ -125,7 +120,6 @@ function Profile() {
           <UserIcon className="w-6 h-6 text-orange-500" /> Mon Profil
         </h1>
 
-        {/* Bloc de sécurité */}
         {!editing && (
           <div className="bg-white shadow-md p-4 mb-6 rounded-lg">
             <h2 className="font-semibold mb-2 flex items-center gap-2">
@@ -147,7 +141,6 @@ function Profile() {
           </div>
         )}
 
-        {/* Formulaire profil */}
         <form
           onSubmit={handleSave}
           className="space-y-4 bg-white p-6 shadow-lg rounded-xl"
@@ -183,9 +176,8 @@ function Profile() {
             type="email"
             name="email"
             value={user.email}
-            onChange={handleChange}
-            disabled={!editing}
-            className="w-full px-4 py-2 border rounded-lg"
+            disabled // email non éditable ici
+            className="w-full px-4 py-2 border rounded-lg bg-gray-100"
             placeholder="Email"
           />
           <input
@@ -197,6 +189,7 @@ function Profile() {
             className="w-full px-4 py-2 border rounded-lg"
             placeholder="Téléphone"
           />
+
           {editing && (
             <button
               type="submit"

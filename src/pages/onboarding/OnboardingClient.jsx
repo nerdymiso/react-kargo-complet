@@ -5,6 +5,7 @@ import { supabase } from "../../services/supabase";
 export default function OnboardingClient() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
+    pseudo: "",
     company_name: "",
     address: "",
     payment_method: "",
@@ -14,6 +15,7 @@ export default function OnboardingClient() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -23,16 +25,22 @@ export default function OnboardingClient() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setSuccess("");
     setLoading(true);
 
     try {
-      const { data: user, error: userError } = await supabase.auth.getUser();
-      if (userError) throw userError;
-      if (!user.user) throw new Error("Utilisateur non authentifié");
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
 
-      const { error: insertError } = await supabase.from("clients").insert([
+      if (userError) throw userError;
+      if (!user) throw new Error("Utilisateur non authentifié");
+
+      const { error: insertError } = await supabase.from("clients").upsert([
         {
-          id: user.user.id,
+          id: user.id,
+          pseudo: formData.pseudo,
           company_name: formData.company_name,
           address: formData.address,
           payment_method: formData.payment_method,
@@ -43,14 +51,23 @@ export default function OnboardingClient() {
 
       if (insertError) throw insertError;
 
-      navigate("/ClientDashboard"); // redirection après succès
+      setSuccess("✅ Onboarding réussi 🎉 Bienvenue !");
+      setTimeout(() => navigate("/ClientDashboard"), 1500);
     } catch (err) {
-      console.error(err.message);
-      setError("Impossible de compléter l’onboarding. Réessaie.");
+      console.error("❌ Onboarding error:", err.message);
+      setError(err.message || "Impossible de compléter l’onboarding. Réessaie.");
     } finally {
       setLoading(false);
     }
   };
+
+  const isFormValid =
+    formData.pseudo &&
+    formData.company_name &&
+    formData.address &&
+    formData.payment_method &&
+    formData.nif &&
+    formData.rc;
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100">
@@ -59,12 +76,26 @@ export default function OnboardingClient() {
         className="bg-white shadow-lg rounded-2xl p-8 w-full max-w-md"
       >
         <h1 className="text-xl font-semibold mb-6 text-center">
-          Onboarding Client
+          Onboarding Entreprise
         </h1>
 
-        {error && (
-          <p className="text-red-500 text-sm mb-4 text-center">{error}</p>
+        {error && <p className="text-red-500 text-sm mb-4 text-center">{error}</p>}
+        {success && (
+          <p className="text-green-600 text-sm mb-4 text-center">{success}</p>
         )}
+
+        <div className="mb-4">
+          <label className="block mb-1 font-medium">Pseudo</label>
+          <input
+            type="text"
+            name="pseudo"
+            value={formData.pseudo}
+            onChange={handleChange}
+            required
+            className="w-full border rounded-lg px-3 py-2"
+            placeholder="Ex: speedyDZ"
+          />
+        </div>
 
         <div className="mb-4">
           <label className="block mb-1 font-medium">Nom de l’entreprise</label>
@@ -86,6 +117,7 @@ export default function OnboardingClient() {
             name="address"
             value={formData.address}
             onChange={handleChange}
+            required
             className="w-full border rounded-lg px-3 py-2"
             placeholder="Ex: Alger, Hydra"
           />
@@ -97,6 +129,7 @@ export default function OnboardingClient() {
             name="payment_method"
             value={formData.payment_method}
             onChange={handleChange}
+            required
             className="w-full border rounded-lg px-3 py-2"
           >
             <option value="">Sélectionner</option>
@@ -118,20 +151,20 @@ export default function OnboardingClient() {
             placeholder="Ex: 1234567890"
           />
           <label className="block mb-1 font-medium mt-4">RC</label>
-          <input 
+          <input
             type="text"
             name="rc"
             value={formData.rc}
             onChange={handleChange}
             required
-            className="w-full border rounded-lg px-3 py-2 mt-4"
+            className="w-full border rounded-lg px-3 py-2 mt-2"
             placeholder="Ex: 12-34-567890"
           />
         </div>
 
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || !isFormValid}
           className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50"
         >
           {loading ? "Enregistrement..." : "Valider"}

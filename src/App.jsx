@@ -1,6 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Contact from "./components/contact";
+import { UserProvider } from "./hooks/UserContext"; 
 
 import Home from "./pages/Home";
 import Login from "./pages/Login";
@@ -20,7 +21,9 @@ import OnboardingClient from "./pages/onboarding/OnboardingClient";
 
 function App() {
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900">
+    <UserProvider>
+    <div className="pt-32 min-h-screen bg-gray-50 text-gray-900">
+      
       {/* Navbar toujours visible */}
       <Navbar />
 
@@ -51,6 +54,7 @@ function App() {
 
       <Contact />
     </div>
+    <UserProvider />
   );
 }
 

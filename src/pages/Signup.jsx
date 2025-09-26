@@ -6,6 +6,7 @@ import { supabase } from "../services/supabase";
 function Signup() {
   const navigate = useNavigate();
   const [form, setForm] = useState({
+    pseudo: "",
     prenom: "",
     nom: "",
     email: "",
@@ -36,23 +37,24 @@ function Signup() {
           data: {
             full_name: `${form.prenom} ${form.nom}`,
             role: form.role,
+            pseudo: form.pseudo,
           },
         },
       });
 
       if (error) throw error;
-
       const user = data?.user;
       if (!user) throw new Error("Impossible de créer le compte utilisateur.");
 
-      // 2️⃣ Ajouter user dans la table "users"
+      // 2️⃣ Enregistrer les infos dans la table "users"
       const { error: upsertError } = await supabase.from("users").upsert([
         {
-          id: user.id, // toujours le même que dans auth.users
+          id: user.id,
           email: form.email,
           phone: form.phone,
           nom: form.nom,
           prenom: form.prenom,
+          pseudo: form.pseudo,
           role: form.role,
           address: form.address,
         },
@@ -60,23 +62,24 @@ function Signup() {
 
       if (upsertError) throw upsertError;
 
-      // 3️⃣ Redirection selon le rôle choisi
+      // 3️⃣ Vérifier session active
+      const { data: sessionData } = await supabase.auth.getSession();
+      console.log("✅ Session après signup:", sessionData);
+
+      // 4️⃣ Redirection selon rôle choisi
       if (form.role === "expediteur") {
-        navigate("/OnboardingExpediteur");
+        navigate("/ClientDashboard");
       } else if (form.role === "transporteur") {
         navigate("/OnboardingTransporteur");
       } else {
         navigate("/OnboardingClient");
       }
     } catch (err) {
-      console.error(err);
+      console.error("❌ Signup error:", err.message);
       setErrorMsg(err.message);
     } finally {
       setLoading(false);
     }
-    const { data: sessionData } = await supabase.auth.getSession();
-      console.log("✅ Session après signup:", sessionData);
-
   };
 
   return (
@@ -84,11 +87,18 @@ function Signup() {
       <div className="bg-white shadow-lg rounded-2xl p-8 w-full max-w-md">
         <h1 className="text-2xl font-bold text-center mb-6">Créer un compte</h1>
 
-        {errorMsg && (
-          <p className="text-red-500 text-center mb-4">{errorMsg}</p>
-        )}
+        {errorMsg && <p className="text-red-500 text-center mb-4">{errorMsg}</p>}
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          <input
+            type="text"
+            name="pseudo"
+            placeholder="Pseudo"
+            value={form.pseudo}
+            onChange={handleChange}
+            className="w-full px-4 py-2 border rounded-lg"
+            required
+          />
           <input
             type="text"
             name="prenom"
@@ -114,16 +124,14 @@ function Signup() {
             value={form.address}
             onChange={handleChange}
             className="w-full px-4 py-2 border rounded-lg"
-            required
           />
           <input
-            type="text"
+            type="tel"
             name="phone"
             placeholder="Numéro de téléphone"
             value={form.phone}
             onChange={handleChange}
             className="w-full px-4 py-2 border rounded-lg"
-            required
           />
           <input
             type="email"
@@ -144,7 +152,6 @@ function Signup() {
             required
           />
 
-          {/* Champ rôle → mieux avec un select */}
           <select
             name="role"
             value={form.role}
@@ -169,10 +176,7 @@ function Signup() {
 
         <p className="text-center mt-4 text-gray-600">
           Déjà inscrit ?{" "}
-          <Link
-            to="/login"
-            className="text-orange-500 font-semibold hover:underline"
-          >
+          <Link to="/login" className="text-orange-500 font-semibold hover:underline">
             Se connecter
           </Link>
         </p>
