@@ -6,7 +6,6 @@ const BUCKET = "transporteur_docs"; // nom exact du bucket
 
 export default function OnboardingTransporteur() {
   const [form, setForm] = useState({
-    pseudo: "",
     vehicle_type: "",
     license_plate: "",
     capacity_kg: "",
@@ -77,7 +76,6 @@ export default function OnboardingTransporteur() {
       const { error: insertError } = await supabase.from("transporteurs").upsert([
         {
           id: userId,
-          pseudo: form.pseudo,
           vehicle_type: form.vehicle_type || null,
           license_plate: form.license_plate || null,
           capacity_kg: form.capacity_kg ? parseFloat(form.capacity_kg) : null,
@@ -105,7 +103,7 @@ export default function OnboardingTransporteur() {
   };
 
   const isFormValid =
-    form.pseudo &&
+    
     form.vehicle_type &&
     form.license_plate &&
     form.capacity_kg &&
@@ -126,15 +124,7 @@ export default function OnboardingTransporteur() {
         {success && <p className="text-green-600 text-center mb-4">{success}</p>}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            type="text"
-            name="pseudo"
-            placeholder="Pseudo"
-            value={form.pseudo}
-            onChange={handleChange}
-            className="w-full border rounded-lg px-4 py-2"
-            required
-          />
+          
 
           <select
             name="vehicle_type"

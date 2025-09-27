@@ -8,7 +8,7 @@ function Sidebar({ role }) {
       <nav className="flex flex-col space-y-4">
         {role === "transporteur" ? (
           <>
-          <Link to="/DriverDashboard" className="hover:text-orange-400">Accueil</Link>
+           <Link to="/DriverDashboard" className="hover:text-orange-400">Accueil</Link>
             <Link to="/DriverHistory" className="hover:text-orange-400">Historique</Link>
             <Link to="/Profile" className="hover:text-orange-400">Profil</Link>
             <Link to="/Settings" className="hover:text-orange-400">Paramètres</Link>
