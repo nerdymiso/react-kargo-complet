@@ -1,41 +1,50 @@
 import DashboardLayout from "../components/DashboardLayout";
-//import NavbarDashboard from "../components/NavbarDashboard";
 import { Package, Truck, PlusCircle } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useUser } from "../hooks/UserContext"; // ✅
 
 function ClientDashboard() {
-  // Exemple de fausses commandes
-  const orders = [
-    { id: 1, title: "Palette de vêtements", status: "En cours" },
-    { id: 2, title: "Équipements électroniques", status: "Livrée" },
-    { id: 3, title: "Produits alimentaires", status: "En attente" },
-  ];
+  const { user } = useUser(); // ✅ utiliser le hook, pas useContext(UserContext)
+
+  if (!user) {
+    return (
+      <DashboardLayout>
+        <h1 className="text-2xl font-bold mb-6">Veuillez vous connecter</h1>
+      </DashboardLayout>
+    );
+  }
 
   return (
-        <DashboardLayout>   
-            <h1 className="text-2xl font-bold mb-6">Tableau de bord Client</h1>
+    <DashboardLayout>
+      <h1 className="text-2xl font-bold mb-6">
+        Bienvenue, {user.pseudo || user.name} 👋
+      </h1>
 
-          {/* Statistiques rapides */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              <div className="bg-white shadow p-6 rounded-xl flex items-center gap-4">
-                 <Package size={32} className="text-orange-500" />
-                 <div>
-                     <p className="text-gray-600">Commandes totales</p>
-                     <h2 className="text-xl font-bold">42</h2>
-                  </div>
-                </div>
-            <div className="bg-white shadow p-6 rounded-xl flex items-center gap-4">
-                    <Truck size={32} className="text-green-600" />
-                 <div>
-                        <p className="text-gray-600">En livraison</p>
-                        <h2 className="text-xl font-bold">5</h2>
-                </div>
-            </div>
+      {/* Statistiques rapides */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="bg-white shadow p-6 rounded-xl flex items-center gap-4">
+          <Package size={32} className="text-orange-500" />
+          <div>
+            <p className="text-gray-600">Commandes totales</p>
+            <h2 className="text-xl font-bold">{user.orders?.length || 0}</h2>
+          </div>
+        </div>
+        <div className="bg-white shadow p-6 rounded-xl flex items-center gap-4">
+          <Truck size={32} className="text-green-600" />
+          <div>
+            <p className="text-gray-600">En livraison</p>
+            <h2 className="text-xl font-bold">
+              {user.orders?.filter((o) => o.status === "En cours").length || 0}
+            </h2>
+          </div>
+        </div>
         <div className="bg-white shadow p-6 rounded-xl flex items-center gap-4">
           <Package size={32} className="text-blue-600" />
           <div>
             <p className="text-gray-600">Livrées</p>
-            <h2 className="text-xl font-bold">30</h2>
+            <h2 className="text-xl font-bold">
+              {user.orders?.filter((o) => o.status === "Livrée").length || 0}
+            </h2>
           </div>
         </div>
       </div>
@@ -55,8 +64,11 @@ function ClientDashboard() {
       <div className="bg-white shadow rounded-xl p-6">
         <h2 className="text-xl font-semibold mb-4">Commandes récentes</h2>
         <ul className="divide-y">
-          {orders.map((order) => (
-            <li key={order.id} className="py-3 flex justify-between items-center">
+          {user.orders?.map((order) => (
+            <li
+              key={order.id}
+              className="py-3 flex justify-between items-center"
+            >
               <span>{order.title}</span>
               <span
                 className={`px-3 py-1 rounded-full text-sm font-medium ${

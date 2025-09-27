@@ -1,9 +1,15 @@
 import DashboardLayout from "../components/DashboardLayout";
 import { Truck, Package, CheckCircle, Clock } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useUser } from "../hooks/UserContext";
 
 function DriverDashboard() {
-  // Exemple de fausses livraisons
+  const { user, loading } = useUser();
+
+  if (loading) return <div>Chargement...</div>;
+  if (!user) return <div>Veuillez vous connecter</div>;
+
+  // Exemple de fausses livraisons (à remplacer par la DB plus tard)
   const deliveries = [
     { id: 1, title: "Palette de vêtements", status: "En cours" },
     { id: 2, title: "Équipements électroniques", status: "Livrée" },
@@ -12,7 +18,10 @@ function DriverDashboard() {
 
   return (
     <DashboardLayout>
-      <h1 className="text-2xl font-bold mb-6">Tableau de bord Transporteur</h1>
+      <h1 className="text-2xl font-bold mb-2">Tableau de bord Transporteur</h1>
+      <p className="text-gray-600 mb-6">
+        Bienvenue, <span className="font-semibold">{user.pseudo || user.nom}</span>
+      </p>
 
       {/* Statistiques rapides */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">

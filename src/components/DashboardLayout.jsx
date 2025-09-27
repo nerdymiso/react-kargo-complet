@@ -1,17 +1,21 @@
 import Sidebar from "./Sidebar";
-import useUserRole from "../hooks/useUserRole";
+import { useUser } from "../hooks/UserContext";
 
 function DashboardLayout({ children }) {
-  const { role, loading } = useUserRole();
+  const { user } = useUser(); // récupère user (et setUser si besoin)
 
-  if (loading) {
-    return <div className="flex justify-center items-center h-screen">Chargement...</div>;
+  if (!user) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        Veuillez vous connecter...
+      </div>
+    );
   }
 
   return (
     <div className="flex h-screen bg-gray-100">
-      {/* Sidebar dynamique */}
-      <Sidebar role={role} />
+      {/* Sidebar dynamique en fonction du rôle */}
+      <Sidebar role={user.role} />
 
       {/* Contenu */}
       <main className="flex-1 p-6 overflow-y-auto">{children}</main>
