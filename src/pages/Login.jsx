@@ -5,7 +5,7 @@ import { supabase } from "../services/supabase";
 
 function Login() {
   const navigate = useNavigate();
-  const [identifier, setIdentifier] = useState(""); // peut être email ou pseudo
+  const [identifier, setIdentifier] = useState(""); // email ou pseudo
   const [password, setPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const [loading, setLoading] = useState(false);
@@ -18,7 +18,7 @@ function Login() {
     try {
       let emailToUse = identifier;
 
-      // 🔎 Si l’utilisateur tape un pseudo, on récupère l’email correspondant
+      // 🔎 Si pseudo → récupérer email
       if (!identifier.includes("@")) {
         const { data: userRow, error: pseudoError } = await supabase
           .from("users")
@@ -33,17 +33,18 @@ function Login() {
         emailToUse = userRow.email;
       }
 
-      // ✅ Connexion avec email + mot de passe
+      // ✅ Connexion avec Supabase Auth
       const { data, error } = await supabase.auth.signInWithPassword({
         email: emailToUse,
         password,
       });
 
       if (error) throw error;
+      if (!data.user) throw new Error("Échec de la connexion");
 
       console.log("✅ Utilisateur connecté:", data.user);
 
-      // 🔎 Récupérer rôle depuis la table users
+      // 🔎 Récupérer rôle depuis "users"
       const { data: profile, error: profileError } = await supabase
         .from("users")
         .select("role")
@@ -52,13 +53,20 @@ function Login() {
 
       if (profileError) throw profileError;
 
-      // 🚀 Redirection selon rôle
-      if (profile.role === "expediteur") {
-        navigate("/ClientDashboard");
-      } else if (profile.role === "transporteur") {
-        navigate("/DriverDashboard");
-      } else {
-        navigate("/ClientDashboard");
+      // 🚀 Redirection par rôle
+      switch (profile.role) {
+        case "expediteur":
+          navigate("/ClientDashboard");
+          break;
+        case "entreprise":
+          navigate("/OnboardingClient"); // ou ClientDashboard si déjà onboardé
+          break;
+        case "transporteur":
+          navigate("/DriverDashboard");
+          break;
+        default:
+          navigate("/");
+          break;
       }
     } catch (err) {
       console.error("❌ Login error:", err.message);

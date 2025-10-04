@@ -7,6 +7,7 @@ import { supabase } from "../services/supabase";
 function Settings() {
   const [password, setPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -16,6 +17,14 @@ function Settings() {
     setMessage("");
 
     try {
+      if (newPassword.length < 6) {
+        throw new Error("Le mot de passe doit contenir au moins 6 caractères.");
+      }
+
+      if (newPassword !== confirmPassword) {
+        throw new Error("Les mots de passe ne correspondent pas.");
+      }
+
       // 1️⃣ Vérifier que l’utilisateur est connecté
       const {
         data: { user },
@@ -38,6 +47,7 @@ function Settings() {
       setMessage("✅ Mot de passe mis à jour avec succès.");
       setPassword("");
       setNewPassword("");
+      setConfirmPassword("");
     } catch (err) {
       console.error("❌ Erreur update password:", err.message);
       setMessage(err.message);
@@ -86,6 +96,15 @@ function Settings() {
             placeholder="Nouveau mot de passe"
             required
           />
+          <input
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            className="w-full px-4 py-2 border rounded-lg"
+            placeholder="Confirmer le nouveau mot de passe"
+            required
+          />
+
           <button
             type="submit"
             disabled={loading}

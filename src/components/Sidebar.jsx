@@ -1,29 +1,45 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 function Sidebar({ role }) {
-  return (
-    <aside className="w-64 bg-[#0a1d40] text-white flex flex-col p-6 space-y-6">
-      <h1 className="text-xl font-bold">Kargo</h1>
+  const location = useLocation();
 
-      <nav className="flex flex-col space-y-4">
-        {role === "transporteur" ? (
-          <>
-           <Link to="/DriverDashboard" className="hover:text-orange-400">Accueil</Link>
-            <Link to="/DriverHistory" className="hover:text-orange-400">Historique</Link>
-            <Link to="/Profile" className="hover:text-orange-400">Profil</Link>
-            <Link to="/Settings" className="hover:text-orange-400">Paramètres</Link>
-          </>
-            
-        ) : (
-          <>
-            <Link to="/ClientDashboard" className="hover:text-orange-400">Accueil</Link>
-            <Link to="/NewOrder" className="hover:text-orange-400">Nouvelle commande</Link>
-            <Link to="/OrdersTracking" className="hover:text-orange-400">Suivi colis</Link>
-            <Link to="/Profile" className="hover:text-orange-400">Profil</Link>
-            <Link to="/Settings" className="hover:text-orange-400">Paramètres</Link>
-          </>
-          
-        )}
+  // Define links for each role
+  const links =
+    role === "transporteur"
+      ? [
+          { to: "/DriverDashboard", label: "Accueil" },
+          { to: "/DriverHistory", label: "Historique" },
+          { to: "/Profile", label: "Profil" },
+          { to: "/Settings", label: "Paramètres" },
+        ]
+      : [
+          { to: "/ClientDashboard", label: "Accueil" },
+          { to: "/NewOrder", label: "Nouvelle commande" },
+          { to: "/OrdersTracking", label: "Suivi colis" },
+          { to: "/Profile", label: "Profil" },
+          { to: "/Settings", label: "Paramètres" },
+        ];
+
+  return (
+    <aside className="w-64 bg-[#0a1d40] text-white flex flex-col p-6 space-y-8">
+      {/* Logo / Title */}
+      <h1 className="text-2xl font-bold text-center tracking-wide">Kargo</h1>
+
+      {/* Navigation */}
+      <nav className="flex flex-col space-y-3">
+        {links.map((link) => (
+          <Link
+            key={link.to}
+            to={link.to}
+            className={`px-3 py-2 rounded transition ${
+              location.pathname === link.to
+                ? "bg-orange-500 text-white font-semibold"
+                : "hover:text-orange-400"
+            }`}
+          >
+            {link.label}
+          </Link>
+        ))}
       </nav>
     </aside>
   );

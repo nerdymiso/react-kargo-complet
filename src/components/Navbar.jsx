@@ -1,14 +1,19 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useUser } from "../hooks/UserContext";
-import logo from "../assets/logo.png"; // ✅ import instead of hardcoding path
+import { useUser } from "../hooks/useUser";
+import logo from "../assets/logo.png";
+import { LogOut } from "lucide-react";
 
 function Navbar() {
   const { user, logout } = useUser();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
-    await logout();
-    navigate("/"); // ✅ go back to homepage ("/")
+    try {
+      await logout();
+      navigate("/"); // retour à l'accueil
+    } catch (err) {
+      console.error("❌ Erreur logout:", err.message);
+    }
   };
 
   return (
@@ -31,13 +36,14 @@ function Navbar() {
           {user ? (
             <>
               <span className="text-orange-400">
-                Hi, {user.pseudo || user.email}
+                Hi, {user?.pseudo}
               </span>
               <button
                 onClick={handleLogout}
-                className="bg-red-500 px-3 py-1 rounded hover:bg-red-600 transition"
+                className="flex items-center gap-1 bg-red-500 px-3 py-1 rounded hover:bg-red-600 transition"
+                aria-label="Se déconnecter"
               >
-                Logout
+                <LogOut size={16} /> Logout
               </button>
             </>
           ) : (

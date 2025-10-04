@@ -1,7 +1,8 @@
 import { Routes, Route } from "react-router-dom";
+import React from "react";
 import Navbar from "./components/Navbar";
 import Contact from "./components/contact";
-import { UserProvider } from "./hooks/UserContext"; 
+import UserProvider  from "./hooks/UserProvider"; 
 
 import Home from "./pages/Home";
 import Login from "./pages/Login";
@@ -21,6 +22,7 @@ import OnboardingClient from "./pages/onboarding/OnboardingClient";
 
 function App() {
   return (
+  <React.StrictMode>
     <UserProvider>
       {/* Wrapper */}
       <div className="flex flex-col min-h-screen bg-gray-50 text-gray-900">
@@ -61,6 +63,7 @@ function App() {
         </footer>
       </div>
     </UserProvider>
+  </React.StrictMode>
   );
 }
 

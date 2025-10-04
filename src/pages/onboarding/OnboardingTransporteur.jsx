@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { supabase } from "../../services/supabase";
 import { useNavigate } from "react-router-dom";
 
-const BUCKET = "transporteur_docs"; // nom exact du bucket
+const BUCKET = "transporteur_docs";
 
 export default function OnboardingTransporteur() {
   const [form, setForm] = useState({
@@ -27,17 +27,15 @@ export default function OnboardingTransporteur() {
       if (!file) return;
 
       if (file.size > 1024 * 1024) {
-        setErrorMsg("⚠️ Le fichier doit être inférieur à 1 Mo.");
-        return;
+        return setErrorMsg("⚠️ Le fichier doit être inférieur à 1 Mo.");
       }
       if (file.type !== "application/pdf") {
-        setErrorMsg("⚠️ Seuls les fichiers PDF sont acceptés.");
-        return;
+        return setErrorMsg("⚠️ Seuls les fichiers PDF sont acceptés.");
       }
 
-      setForm((s) => ({ ...s, [e.target.name]: file }));
+      setForm((prev) => ({ ...prev, [e.target.name]: file }));
     } else {
-      setForm((s) => ({ ...s, [e.target.name]: e.target.value }));
+      setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
     }
   };
 
@@ -51,42 +49,44 @@ export default function OnboardingTransporteur() {
 
     if (uploadError) throw uploadError;
 
-    const { data: urlData } = supabase.storage.from(BUCKET).getPublicUrl(filePath);
-    return urlData?.publicUrl || null;
+    const { data } = supabase.storage.from(BUCKET).getPublicUrl(filePath);
+    return data?.publicUrl || null;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setErrorMsg("");
     setSuccess("");
+    setLoading(true);
 
     try {
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       if (userError || !user) throw new Error("Utilisateur non authentifié");
       const userId = user.id;
 
-      // ✅ Upload fichiers
-      const permisUrl = await uploadAndGetPublicUrl(userId, form.permis, "permis");
-      const assuranceUrl = await uploadAndGetPublicUrl(userId, form.assurance, "assurance");
-      const carteGriseUrl = await uploadAndGetPublicUrl(userId, form.carte_grise, "carte_grise");
-      const casierUrl = await uploadAndGetPublicUrl(userId, form.casier, "casier");
+      // Upload docs
+      const [permisUrl, assuranceUrl, carteGriseUrl, casierUrl] = await Promise.all([
+        uploadAndGetPublicUrl(userId, form.permis, "permis"),
+        uploadAndGetPublicUrl(userId, form.assurance, "assurance"),
+        uploadAndGetPublicUrl(userId, form.carte_grise, "carte_grise"),
+        uploadAndGetPublicUrl(userId, form.casier, "casier"),
+      ]);
 
-      // ✅ Insertion / mise à jour
+      // Insert/Upsert
       const { error: insertError } = await supabase.from("transporteurs").upsert([
         {
           id: userId,
-          vehicle_type: form.vehicle_type || null,
-          license_plate: form.license_plate || null,
-          capacity_kg: form.capacity_kg ? parseFloat(form.capacity_kg) : null,
-          capacity_m3: form.capacity_m3 ? parseFloat(form.capacity_m3) : null,
-          is_available: true,
-          rating: 5.0,
-          total_deliveries: 0,
+          vehicle_type: form.vehicle_type,
+          license_plate: form.license_plate,
+          capacity_kg: parseFloat(form.capacity_kg),
+          capacity_m3: parseFloat(form.capacity_m3),
           permis_url: permisUrl,
           assurance_url: assuranceUrl,
           carte_grise_url: carteGriseUrl,
           casier_url: casierUrl,
+          is_available: true, // can remove if default set in DB
+          rating: 5.0,        // idem
+          total_deliveries: 0 // idem
         },
       ]);
 
@@ -103,7 +103,6 @@ export default function OnboardingTransporteur() {
   };
 
   const isFormValid =
-    
     form.vehicle_type &&
     form.license_plate &&
     form.capacity_kg &&
@@ -124,8 +123,6 @@ export default function OnboardingTransporteur() {
         {success && <p className="text-green-600 text-center mb-4">{success}</p>}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          
-
           <select
             name="vehicle_type"
             value={form.vehicle_type}
@@ -134,13 +131,55 @@ export default function OnboardingTransporteur() {
             required
           >
             <option value="">-- Choisir un véhicule --</option>
+
+            {/* Utilitaires légers */}
             <optgroup label="🚐 Utilitaires légers">
+              <option value="harbin_ridelles">Harbin ridelles</option>
+              <option value="harbin_maraicher">Harbin maraîcher</option>
+              <option value="harbin_conteneur">Harbin conteneur</option>
+              <option value="harbin_frigorifique">Harbin frigorifique</option>
+              <option value="fourgonnette">Fourgonnette</option>
               <option value="pickup">Pickup</option>
-              <option value="fourgon">Fourgon</option>
+              <option value="pickup_maraicher">Pickup maraîcher</option>
             </optgroup>
-            <optgroup label="🚛 Camions lourds">
-              <option value="camion_3.5t">Camion 3.5T</option>
-              <option value="camion_5t">Camion 5T</option>
+
+            {/* Camions légers et moyens */}
+            <optgroup label="🚚 Camions légers & moyens">
+              <option value="petit_fourgon">Petit fourgon</option>
+              <option value="fourgon_2p">Fourgon 2 panneaux</option>
+              <option value="fourgon_3p">Fourgon 3 panneaux</option>
+              <option value="fourgon_chassis_long">
+                Fourgon châssis long jumelé
+              </option>
+
+              <option value="camion_2.5t_ridelles">Camion 2.5T ridelles</option>
+              <option value="camion_2.5t_maraicher">Camion 2.5T maraîcher</option>
+              <option value="camion_2.5t_conteneur">Camion 2.5T conteneur</option>
+              <option value="camion_2.5t_frigorifique">
+                Camion 2.5T frigorifique
+              </option>
+
+              <option value="camion_3.5t_ridelles">Camion 3.5T ridelles</option>
+              <option value="camion_3.5t_maraicher">Camion 3.5T maraîcher</option>
+              <option value="camion_3.5t_conteneur">Camion 3.5T conteneur</option>
+              <option value="camion_3.5t_frigorifique">
+                Camion 3.5T frigorifique
+              </option>
+            </optgroup>
+
+            {/* Camions lourds */}
+            <optgroup label="🚛 Camions lourds (≥ 5T)">
+              <option value="camion_5t_ridelles">Camion 5T ridelles</option>
+              <option value="camion_5t_maraicher">Camion 5T maraîcher</option>
+              <option value="camion_5t_conteneur">Camion 5T conteneur</option>
+              <option value="camion_5t_frigorifique">Camion 5T frigorifique</option>
+
+              <option value="camion_lourd_ridelles">Camion lourd ridelles</option>
+              <option value="camion_lourd_maraicher">Camion lourd maraîcher</option>
+              <option value="camion_lourd_conteneur">Camion lourd conteneur</option>
+              <option value="camion_lourd_frigorifique">
+                Camion lourd frigorifique
+              </option>
             </optgroup>
           </select>
 

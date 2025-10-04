@@ -1,8 +1,9 @@
 import Sidebar from "./Sidebar";
-import { useUser } from "../hooks/UserContext";
+import { useContext } from "react";
+import { UserContext } from "../hooks/UserProvider";
 
 function DashboardLayout({ children }) {
-  const { user } = useUser(); // récupère user (et setUser si besoin)
+  const { user } = useContext(UserContext);
 
   if (!user) {
     return (

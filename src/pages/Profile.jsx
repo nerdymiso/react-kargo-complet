@@ -22,8 +22,8 @@ function Profile() {
 
         if (authUser) {
           const { data: profile, error: profileError } = await supabase
-            .from("users")
-            .select("prenom, nom, phone, pseudo")
+            .from("profiles")
+            .select("prenom, nom, phone, pseudo, role")
             .eq("id", authUser.id)
             .single();
 
@@ -32,9 +32,10 @@ function Profile() {
           setUser({
             prenom: profile?.prenom || "",
             nom: profile?.nom || "",
-            email: authUser.email, // toujours depuis Auth
+            email: authUser.email, // email vient toujours d'Auth
             phone: profile?.phone || "",
             pseudo: profile?.pseudo || "",
+            role: profile?.role || "client",
           });
         }
       } catch (err) {
@@ -47,7 +48,6 @@ function Profile() {
     fetchUser();
   }, []);
 
-  // Vérification du mot de passe avant édition
   const handleUnlock = async () => {
     try {
       const {
@@ -80,7 +80,6 @@ function Profile() {
     setUser({ ...user, [e.target.name]: e.target.value });
   };
 
-  // Sauvegarde en base
   const handleSave = async (e) => {
     e.preventDefault();
     setSaving(true);
@@ -90,12 +89,13 @@ function Profile() {
       } = await supabase.auth.getUser();
 
       const { error } = await supabase
-        .from("users")
+        .from("profiles")
         .update({
           prenom: user.prenom,
           nom: user.nom,
           phone: user.phone,
           pseudo: user.pseudo,
+          role: user.role,
         })
         .eq("id", authUser.id);
 
@@ -176,7 +176,7 @@ function Profile() {
             type="email"
             name="email"
             value={user.email}
-            disabled // email non éditable ici
+            disabled
             className="w-full px-4 py-2 border rounded-lg bg-gray-100"
             placeholder="Email"
           />
@@ -189,6 +189,19 @@ function Profile() {
             className="w-full px-4 py-2 border rounded-lg"
             placeholder="Téléphone"
           />
+
+          {/* Ajout du champ Rôle */}
+          <select
+            name="role"
+            value={user.role}
+            onChange={handleChange}
+            disabled={!editing}
+            className="w-full px-4 py-2 border rounded-lg"
+          >
+            <option value="client">Client</option>
+            <option value="transporteur">Transporteur</option>
+            <option value="admin">Admin</option>
+          </select>
 
           {editing && (
             <button

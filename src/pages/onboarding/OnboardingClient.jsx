@@ -5,7 +5,6 @@ import { supabase } from "../../services/supabase";
 export default function OnboardingClient() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    pseudo: "",
     company_name: "",
     address: "",
     payment_method: "",
@@ -29,6 +28,7 @@ export default function OnboardingClient() {
     setLoading(true);
 
     try {
+      // 🔑 Get authenticated user
       const {
         data: { user },
         error: userError,
@@ -37,19 +37,29 @@ export default function OnboardingClient() {
       if (userError) throw userError;
       if (!user) throw new Error("Utilisateur non authentifié");
 
-      const { error: insertError } = await supabase.from("clients").upsert([
+      // 📝 Insert into parties (type = company)
+      const { error: insertError } = await supabase.from("parties").upsert([
         {
           id: user.id,
-          pseudo: formData.pseudo,
-          company_name: formData.company_name,
+          type: "company",
+          name: formData.company_name,
           address: formData.address,
-          payment_method: formData.payment_method,
+          phone: null, // optional, peut être ajouté plus tard
           nif: formData.nif,
           rc: formData.rc,
         },
       ]);
 
       if (insertError) throw insertError;
+
+      // 🛠 Optionally update users with pseudo + payment method
+      const { error: updateError } = await supabase.from("profiles").update({
+        pseudo: formData.pseudo,
+        address: formData.address,
+      })
+      .eq("id", user.id);
+
+      if (updateError) throw updateError;
 
       setSuccess("✅ Onboarding réussi 🎉 Bienvenue !");
       setTimeout(() => navigate("/ClientDashboard"), 1500);
@@ -62,7 +72,6 @@ export default function OnboardingClient() {
   };
 
   const isFormValid =
-    formData.pseudo &&
     formData.company_name &&
     formData.address &&
     formData.payment_method &&
@@ -84,19 +93,7 @@ export default function OnboardingClient() {
           <p className="text-green-600 text-sm mb-4 text-center">{success}</p>
         )}
 
-        <div className="mb-4">
-          <label className="block mb-1 font-medium">Pseudo</label>
-          <input
-            type="text"
-            name="pseudo"
-            value={formData.pseudo}
-            onChange={handleChange}
-            required
-            className="w-full border rounded-lg px-3 py-2"
-            placeholder="Ex: speedyDZ"
-          />
-        </div>
-
+        {/* Company name */}
         <div className="mb-4">
           <label className="block mb-1 font-medium">Nom de l’entreprise</label>
           <input
@@ -110,6 +107,7 @@ export default function OnboardingClient() {
           />
         </div>
 
+        {/* Address */}
         <div className="mb-4">
           <label className="block mb-1 font-medium">Adresse</label>
           <input
@@ -123,6 +121,7 @@ export default function OnboardingClient() {
           />
         </div>
 
+        {/* Payment */}
         <div className="mb-4">
           <label className="block mb-1 font-medium">Méthode de paiement</label>
           <select
@@ -139,6 +138,7 @@ export default function OnboardingClient() {
           </select>
         </div>
 
+        {/* NIF + RC */}
         <div className="mb-6">
           <label className="block mb-1 font-medium">NIF</label>
           <input
